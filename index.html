@@ -62,7 +62,7 @@
     // --- 遊戲資料庫 (每週擴充至 50 題) ---
     const GAME_DATA = [
       {
-        id: 1, week: 'W1', stage: '基礎名詞', title: '咱的厝內', icon: IconHome, color: 'bg-rose-200',
+        id: 1, week: 'W1', stage: '名詞類', title: '生活物品', icon: IconHome, color: 'bg-rose-200',
         rule: '純口頭描述，絕對不能比手畫腳喔！',
         words: [
           { text: '冰箱' }, { text: '電風扇' }, { text: '牙膏' }, { text: '書包' }, { text: '電視' }, 
@@ -78,7 +78,7 @@
         ]
       },
       {
-        id: 2, week: 'W2', stage: '基礎名詞', title: '在地生活', icon: IconMap, color: 'bg-orange-200',
+        id: 2, week: 'W2', stage: '名詞類', title: '動植物、食物', icon: IconMap, color: 'bg-orange-200',
         rule: '純口頭描述，絕對不能比手畫腳喔！',
         words: [
           { text: '西瓜' }, { text: '雞蛋' }, { text: '地瓜' }, { text: '螃蟹' }, { text: '貓' }, 
@@ -94,8 +94,8 @@
         ]
       },
       {
-        id: 3, week: 'W3', stage: '動感肢體', title: '日常大小事', icon: IconSmile, color: 'bg-yellow-200',
-        rule: '解說者可以一邊做動作，一邊用台語描述！',
+        id: 3, week: 'W3', stage: '動詞類', title: '生活日常行為', icon: IconSmile, color: 'bg-yellow-200',
+        rule: '請用台語描述！不能講到答案的字喔！',
         words: [
           { text: '洗臉' }, { text: '刷牙' }, { text: '穿鞋子' }, { text: '喝水' }, { text: '睡覺' }, 
           { text: '穿衣服' }, { text: '洗澡' }, { text: '看書' }, { text: '綁鞋帶' }, { text: '剪頭髮' }, 
@@ -110,7 +110,7 @@
         ]
       },
       {
-        id: 4, week: 'W4', stage: '動感肢體', title: '休閒與運動', icon: IconPlay, color: 'bg-lime-200',
+        id: 4, week: 'W4', stage: '動詞類', title: '休閒與運動', icon: IconPlay, color: 'bg-lime-200',
         rule: '解說者可以一邊做動作，一邊用台語描述！',
         words: [
           { text: '拍球' }, { text: '唱歌' }, { text: '跳舞' }, { text: '跑步' }, { text: '溜滑梯' }, 
@@ -126,8 +126,8 @@
         ]
       },
       {
-        id: 5, week: 'W5', stage: '思維轉換', title: '食物禁忌', icon: IconMicOff, color: 'bg-cyan-200',
-        rule: '解說者在描述時，嚴禁說出紅框內的「禁詞」！',
+        id: 5, week: 'W5', stage: '進階名詞類', title: '食物', icon: IconMicOff, color: 'bg-cyan-200',
+        rule: '不能說出紅框內的「禁詞」！',
         words: [
           { text: '蘋果', taboos: ['紅色', '水果'] }, { text: '香蕉', taboos: ['黃色', '猴子'] }, 
           { text: '滷肉飯', taboos: ['肉', '飯'] }, { text: '西瓜', taboos: ['夏天', '紅', '大'] }, 
@@ -157,8 +157,8 @@
         ]
       },
       {
-        id: 6, week: 'W6', stage: '思維轉換', title: '科技禁忌', icon: IconAlertTriangle, color: 'bg-blue-200',
-        rule: '解說者在描述時，嚴禁說出紅框內的「禁詞」！',
+        id: 6, week: 'W6', stage: '進階名詞類', title: '家電', icon: IconAlertTriangle, color: 'bg-blue-200',
+        rule: '不能說出紅框內的「禁詞」！',
         words: [
           { text: '手機', taboos: ['打電話', '螢幕', '滑'] }, { text: '冷氣', taboos: ['涼', '吹', '夏天'] }, 
           { text: '電腦', taboos: ['打字', '網路', '滑鼠'] }, { text: '吹風機', taboos: ['頭髮', '熱', '吹'] }, 
@@ -188,7 +188,7 @@
         ]
       },
       {
-        id: 7, week: 'W7', stage: '綜合應用', title: '市場對話', icon: IconMessageCircle, color: 'bg-purple-200',
+        id: 7, week: 'W7', stage: '對話模擬', title: '猜場景', icon: IconMessageCircle, color: 'bg-purple-200',
         rule: '請演出這個場景會出現的對話，讓隊友猜出「地點」！',
         words: [
           { text: '菜市場' }, { text: '便利商店' }, { text: '夜市' }, { text: '麵包店' }, { text: '早餐店' }, 
@@ -204,7 +204,7 @@
         ]
       },
       {
-        id: 8, week: 'W8', stage: '綜合應用', title: '生活劇場', icon: IconEyeOff, color: 'bg-pink-200',
+        id: 8, week: 'W8', stage: '對話模擬', title: '猜場景', icon: IconEyeOff, color: 'bg-pink-200',
         rule: '請演出這個場景會出現的對話，讓隊友猜出「地點」！',
         words: [
           { text: '醫院' }, { text: '學校' }, { text: '理髮廳' }, { text: '警察局' }, { text: '捷運站' }, 
