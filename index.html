@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>哩講我猜：全台語挑戰遊戲</title>
+  <!-- 引入 Tailwind CSS 進行排版與手繪風格設計 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 引入 React 核心庫 -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <!-- 引入 Babel 來解析 JSX 語法 -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    body {
+      font-family: 'Nunito', 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // --- 圖示庫 (替換原本的 lucide-react，確保單一檔案能直接運行) ---
+    const IconPlay = ({ size = 24, className = "", fill = "none" }) => (
+      <svg viewBox="0 0 24 24" fill={fill} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    );
+    const IconRotateCcw = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+    );
+    const IconHome = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    );
+    const IconClock = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    );
+    const IconAlertTriangle = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    );
+    const IconEyeOff = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+    );
+    const IconSmile = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+    );
+    const IconMap = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" y1="3" x2="9" y2="18"/><line x1="15" y1="6" x2="15" y2="21"/></svg>
+    );
+    const IconMessageCircle = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+    );
+    const IconMicOff = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    );
+
+    // --- 遊戲資料庫 (每週擴充至 50 題) ---
+    const GAME_DATA = [
+      {
+        id: 1, week: 'W1', stage: '基礎名詞', title: '咱的厝內', icon: IconHome, color: 'bg-rose-200',
+        rule: '純口頭描述，絕對不能比手畫腳喔！',
+        words: [
+          { text: '冰箱' }, { text: '電風扇' }, { text: '牙膏' }, { text: '書包' }, { text: '電視' }, 
+          { text: '沙發' }, { text: '掃帚' }, { text: '碗' }, { text: '筷子' }, { text: '洗衣機' }, 
+          { text: '指甲剪' }, { text: '吹風機' }, { text: '保溫瓶' }, { text: '延長線' }, { text: '體重計' }, 
+          { text: '訂書機' }, { text: '口罩' }, { text: '時鐘' }, { text: '衛生紙' }, { text: '毛巾' }, 
+          { text: '肥皂' }, { text: '菜刀' }, { text: '砧板' }, { text: '鍋鏟' }, { text: '垃圾桶' }, 
+          { text: '湯匙' }, { text: '叉子' }, { text: '盤子' }, { text: '馬克杯' }, { text: '抹布' }, 
+          { text: '拖把' }, { text: '畚箕' }, { text: '剪刀' }, { text: '膠水' }, { text: '橡皮擦' }, 
+          { text: '鉛筆盒' }, { text: '檯燈' }, { text: '衣架' }, { text: '枕頭' }, { text: '棉被' }, 
+          { text: '床墊' }, { text: '梳子' }, { text: '洗髮精' }, { text: '沐浴乳' }, { text: '牙刷' }, 
+          { text: '鏡子' }, { text: '鑰匙' }, { text: '錢包' }, { text: '雨傘' }, { text: '雨衣' }
+        ]
+      },
+      {
+        id: 2, week: 'W2', stage: '基礎名詞', title: '在地生活', icon: IconMap, color: 'bg-orange-200',
+        rule: '純口頭描述，絕對不能比手畫腳喔！',
+        words: [
+          { text: '西瓜' }, { text: '雞蛋' }, { text: '地瓜' }, { text: '螃蟹' }, { text: '貓' }, 
+          { text: '狗' }, { text: '大象' }, { text: '香蕉' }, { text: '牛奶' }, { text: '糖果' }, 
+          { text: '臭豆腐' }, { text: '珍珠奶茶' }, { text: '滷肉飯' }, { text: '烏魚子' }, { text: '長頸鹿' }, 
+          { text: '松鼠' }, { text: '荔枝' }, { text: '榴槤' }, { text: '芒果' }, { text: '鳳梨' }, 
+          { text: '芭樂' }, { text: '蘋果' }, { text: '葡萄' }, { text: '橘子' }, { text: '豬' }, 
+          { text: '牛' }, { text: '羊' }, { text: '雞' }, { text: '鴨' }, { text: '鵝' }, 
+          { text: '魚' }, { text: '蝦子' }, { text: '烏龜' }, { text: '兔子' }, { text: '猴子' }, 
+          { text: '老虎' }, { text: '獅子' }, { text: '熊' }, { text: '企鵝' }, { text: '斑馬' }, 
+          { text: '肉圓' }, { text: '蚵仔煎' }, { text: '雞排' }, { text: '滷味' }, { text: '剉冰' }, 
+          { text: '豆花' }, { text: '粽子' }, { text: '湯圓' }, { text: '米血' }, { text: '烤香腸' }
+        ]
+      },
+      {
+        id: 3, week: 'W3', stage: '動感肢體', title: '日常大小事', icon: IconSmile, color: 'bg-yellow-200',
+        rule: '解說者可以一邊做動作，一邊用台語描述！',
+        words: [
+          { text: '洗臉' }, { text: '刷牙' }, { text: '穿鞋子' }, { text: '喝水' }, { text: '睡覺' }, 
+          { text: '穿衣服' }, { text: '洗澡' }, { text: '看書' }, { text: '綁鞋帶' }, { text: '剪頭髮' }, 
+          { text: '拖地' }, { text: '照鏡子' }, { text: '剪紙' }, { text: '揹書包' }, { text: '洗碗' }, 
+          { text: '洗衣服' }, { text: '曬衣服' }, { text: '摺衣服' }, { text: '掃地' }, { text: '倒垃圾' }, 
+          { text: '開門' }, { text: '關窗戶' }, { text: '梳頭髮' }, { text: '戴眼鏡' }, { text: '脫鞋子' }, 
+          { text: '洗手' }, { text: '擦桌子' }, { text: '開電視' }, { text: '關燈' }, { text: '吹頭髮' }, 
+          { text: '塗乳液' }, { text: '剪指甲' }, { text: '穿襪子' }, { text: '戴帽子' }, { text: '打哈欠' }, 
+          { text: '伸懶腰' }, { text: '揉眼睛' }, { text: '擤鼻涕' }, { text: '咳嗽' }, { text: '打噴嚏' }, 
+          { text: '走路' }, { text: '跑步' }, { text: '跳躍' }, { text: '爬樓梯' }, { text: '坐下' }, 
+          { text: '站起來' }, { text: '舉手' }, { text: '拍手' }, { text: '點頭' }, { text: '搖頭' }
+        ]
+      },
+      {
+        id: 4, week: 'W4', stage: '動感肢體', title: '休閒與運動', icon: IconPlay, color: 'bg-lime-200',
+        rule: '解說者可以一邊做動作，一邊用台語描述！',
+        words: [
+          { text: '拍球' }, { text: '唱歌' }, { text: '跳舞' }, { text: '跑步' }, { text: '溜滑梯' }, 
+          { text: '游泳' }, { text: '拍照' }, { text: '畫畫' }, { text: '打籃球' }, { text: '彈鋼琴' }, 
+          { text: '騎腳踏車' }, { text: '爬山' }, { text: '踢足球' }, { text: '拉小提琴' }, { text: '跳繩' }, 
+          { text: '盪鞦韆' }, { text: '翹翹板' }, { text: '玩沙' }, { text: '躲貓貓' }, { text: '抓鬼' }, 
+          { text: '木頭人' }, { text: '老鷹抓小雞' }, { text: '扯鈴' }, { text: '打陀螺' }, { text: '放風箏' }, 
+          { text: '溜冰' }, { text: '溜直排輪' }, { text: '滑板' }, { text: '衝浪' }, { text: '潛水' }, 
+          { text: '釣魚' }, { text: '抓蟲' }, { text: '賞鳥' }, { text: '露營' }, { text: '野餐' }, 
+          { text: '烤肉' }, { text: '逛街' }, { text: '看電影' }, { text: '聽音樂' }, { text: '玩電動' }, 
+          { text: '下棋' }, { text: '打撲克牌' }, { text: '變魔術' }, { text: '吹笛子' }, { text: '彈吉他' }, 
+          { text: '打鼓' }, { text: '吹小號' }, { text: '體操' }, { text: '瑜珈' }, { text: '跆拳道' }
+        ]
+      },
+      {
+        id: 5, week: 'W5', stage: '思維轉換', title: '食物禁忌', icon: IconMicOff, color: 'bg-cyan-200',
+        rule: '解說者在描述時，嚴禁說出紅框內的「禁詞」！',
+        words: [
+          { text: '蘋果', taboos: ['紅色', '水果'] }, { text: '香蕉', taboos: ['黃色', '猴子'] }, 
+          { text: '滷肉飯', taboos: ['肉', '飯'] }, { text: '西瓜', taboos: ['夏天', '紅', '大'] }, 
+          { text: '爆米花', taboos: ['電影', '玉米'] }, { text: '珍珠奶茶', taboos: ['喝', '圓', '吸管'] }, 
+          { text: '臭豆腐', taboos: ['臭', '炸', '泡菜'] }, { text: '蚵仔煎', taboos: ['蛋', '醬', '夜市'] }, 
+          { text: '雞排', taboos: ['炸', '肉', '夜市'] }, { text: '剉冰', taboos: ['冷', '冰', '夏天'] }, 
+          { text: '粽子', taboos: ['端午', '米', '葉子'] }, { text: '湯圓', taboos: ['冬至', '圓', '甜'] }, 
+          { text: '肉圓', taboos: ['肉', '圓', '彰化'] }, { text: '芒果', taboos: ['黃', '甜', '夏天'] }, 
+          { text: '鳳梨', taboos: ['黃', '刺', '旺來'] }, { text: '芭樂', taboos: ['綠', '水果', '硬'] }, 
+          { text: '葡萄', taboos: ['紫', '水果', '一串'] }, { text: '橘子', taboos: ['過年', '橘', '剝皮'] }, 
+          { text: '牛奶', taboos: ['牛', '喝', '白'] }, { text: '豆漿', taboos: ['黃豆', '喝', '早餐'] }, 
+          { text: '油條', taboos: ['長', '炸', '早餐'] }, { text: '蛋餅', taboos: ['蛋', '早餐', '餅'] }, 
+          { text: '麵包', taboos: ['烤', '麵粉', '軟'] }, { text: '蛋糕', taboos: ['生日', '甜', '切'] }, 
+          { text: '巧克力', taboos: ['黑', '甜', '情人節'] }, { text: '餅乾', taboos: ['脆', '零食', '咬'] }, 
+          { text: '糖果', taboos: ['甜', '小', '咬'] }, { text: '布丁', taboos: ['黃', '甜', '軟'] }, 
+          { text: '冰淇淋', taboos: ['冷', '甜', '融化'] }, { text: '薯條', taboos: ['馬鈴薯', '炸', '速食'] }, 
+          { text: '漢堡', taboos: ['肉', '麵包', '速食'] }, { text: '披薩', taboos: ['義大利', '圓', '切'] }, 
+          { text: '義大利麵', taboos: ['麵', '義大利', '長'] }, { text: '牛排', taboos: ['牛', '肉', '切'] }, 
+          { text: '壽司', taboos: ['日本', '飯', '魚'] }, { text: '生魚片', taboos: ['生', '魚', '日本'] }, 
+          { text: '拉麵', taboos: ['日本', '湯', '麵'] }, { text: '咖哩飯', taboos: ['黃', '飯', '辣'] }, 
+          { text: '火鍋', taboos: ['熱', '湯', '冬天'] }, { text: '烤肉', taboos: ['中秋', '烤', '肉'] }, 
+          { text: '滷味', taboos: ['滷', '黑', '夜市'] }, { text: '香腸', taboos: ['肉', '烤', '蒜頭'] }, 
+          { text: '大腸包小腸', taboos: ['香腸', '米', '烤'] }, { text: '豬血糕', taboos: ['血', '糕', '黑'] }, 
+          { text: '地瓜球', taboos: ['炸', '圓', '夜市'] }, { text: '車輪餅', taboos: ['圓', '紅豆', '奶油'] }, 
+          { text: '雞蛋糕', taboos: ['雞', '蛋', '甜'] }, { text: '糖葫蘆', taboos: ['甜', '水果', '串'] }, 
+          { text: '棉花糖', taboos: ['白', '軟', '甜'] }, { text: '咖啡', taboos: ['黑', '苦', '喝'] }
+        ]
+      },
+      {
+        id: 6, week: 'W6', stage: '思維轉換', title: '科技禁忌', icon: IconAlertTriangle, color: 'bg-blue-200',
+        rule: '解說者在描述時，嚴禁說出紅框內的「禁詞」！',
+        words: [
+          { text: '手機', taboos: ['打電話', '螢幕', '滑'] }, { text: '冷氣', taboos: ['涼', '吹', '夏天'] }, 
+          { text: '電腦', taboos: ['打字', '網路', '滑鼠'] }, { text: '吹風機', taboos: ['頭髮', '熱', '吹'] }, 
+          { text: '飲水機', taboos: ['水', '熱', '喝'] }, { text: '電視', taboos: ['看', '螢幕', '遙控器'] }, 
+          { text: '冰箱', taboos: ['冷', '冰', '食物'] }, { text: '洗衣機', taboos: ['洗', '衣服', '轉'] }, 
+          { text: '電風扇', taboos: ['吹', '風', '轉'] }, { text: '微波爐', taboos: ['熱', '加熱', '叮'] }, 
+          { text: '烤箱', taboos: ['烤', '麵包', '熱'] }, { text: '電鍋', taboos: ['煮', '飯', '蒸'] }, 
+          { text: '吸塵器', taboos: ['吸', '灰塵', '地板'] }, { text: '除濕機', taboos: ['水', '濕', '乾'] }, 
+          { text: '空氣清淨機', taboos: ['空氣', '乾淨', '濾網'] }, { text: '掃地機器人', taboos: ['掃', '機器', '自己'] }, 
+          { text: '檯燈', taboos: ['光', '亮', '桌子'] }, { text: '手電筒', taboos: ['光', '停電', '拿'] }, 
+          { text: '相機', taboos: ['拍', '照片', '鏡頭'] }, { text: '攝影機', taboos: ['錄', '影', '動'] }, 
+          { text: '投影機', taboos: ['投', '螢幕', '大'] }, { text: '耳機', taboos: ['聽', '聲音', '耳朵'] }, 
+          { text: '喇叭', taboos: ['聲音', '大', '音樂'] }, { text: '麥克風', taboos: ['唱', '聲音', '講話'] }, 
+          { text: '滑鼠', taboos: ['電腦', '點', '手'] }, { text: '鍵盤', taboos: ['打字', '電腦', '按'] }, 
+          { text: '平板電腦', taboos: ['滑', '大', '螢幕'] }, { text: '智慧手錶', taboos: ['看時間', '手腕', '運動'] }, 
+          { text: '遊戲機', taboos: ['玩', '電動', '把手'] }, { text: '遙控器', taboos: ['按', '電視', '轉台'] }, 
+          { text: '路由器', taboos: ['網路', 'Wi-Fi', '上網'] }, { text: '印表機', taboos: ['印', '紙', '墨水'] }, 
+          { text: '隨身碟', taboos: ['存', '資料', '隨身'] }, { text: '行動電源', taboos: ['充電', '手機', '電'] }, 
+          { text: '延長線', taboos: ['插', '電', '長'] }, { text: '體重計', taboos: ['量', '重', '站'] }, 
+          { text: '體溫計', taboos: ['量', '發燒', '溫度'] }, { text: '血壓計', taboos: ['量', '血壓', '手臂'] }, 
+          { text: '電動牙刷', taboos: ['刷', '牙', '震動'] }, { text: '刮鬍刀', taboos: ['刮', '鬍子', '男生'] }, 
+          { text: '烘衣機', taboos: ['烘', '乾', '衣服'] }, { text: '洗碗機', taboos: ['洗', '碗', '機器'] }, 
+          { text: '咖啡機', taboos: ['煮', '咖啡', '豆'] }, { text: '果汁機', taboos: ['打', '果汁', '水果'] }, 
+          { text: '氣炸鍋', taboos: ['炸', '油', '鍋'] }, { text: '電磁爐', taboos: ['煮', '鍋', '電'] }, 
+          { text: '淨水器', taboos: ['水', '乾淨', '濾'] }, { text: '熱水器', taboos: ['洗澡', '熱', '水'] }, 
+          { text: '抽油煙機', taboos: ['抽', '煙', '煮菜'] }, { text: '碎紙機', taboos: ['碎', '紙', '機器'] }
+        ]
+      },
+      {
+        id: 7, week: 'W7', stage: '綜合應用', title: '市場對話', icon: IconMessageCircle, color: 'bg-purple-200',
+        rule: '請演出這個場景會出現的對話，讓隊友猜出「地點」！',
+        words: [
+          { text: '菜市場' }, { text: '便利商店' }, { text: '夜市' }, { text: '麵包店' }, { text: '早餐店' }, 
+          { text: '文具店' }, { text: '藥局' }, { text: '水果攤' }, { text: '魚攤' }, { text: '豬肉攤' }, 
+          { text: '牛肉攤' }, { text: '雞肉攤' }, { text: '麵攤' }, { text: '飲料店' }, { text: '服飾店' }, 
+          { text: '五金行' }, { text: '超市' }, { text: '百貨公司' }, { text: '鞋店' }, { text: '眼鏡行' }, 
+          { text: '鐘錶行' }, { text: '珠寶店' }, { text: '化妝品店' }, { text: '香水店' }, { text: '玩具店' }, 
+          { text: '書店' }, { text: '唱片行' }, { text: '樂器行' }, { text: '體育用品店' }, { text: '腳踏車店' }, 
+          { text: '機車行' }, { text: '汽車維修廠' }, { text: '加油站' }, { text: '寵物店' }, { text: '花店' }, 
+          { text: '咖啡廳' }, { text: '速食店' }, { text: '牛排館' }, { text: '火鍋店' }, { text: '燒烤店' }, 
+          { text: '居酒屋' }, { text: '自助餐店' }, { text: '便當店' }, { text: '冰店' }, { text: '甜點店' }, 
+          { text: '烘焙坊' }, { text: '雜貨店' }, { text: '跳蚤市場' }, { text: '農夫市集' }, { text: '黃昏市場' }
+        ]
+      },
+      {
+        id: 8, week: 'W8', stage: '綜合應用', title: '生活劇場', icon: IconEyeOff, color: 'bg-pink-200',
+        rule: '請演出這個場景會出現的對話，讓隊友猜出「地點」！',
+        words: [
+          { text: '醫院' }, { text: '學校' }, { text: '理髮廳' }, { text: '警察局' }, { text: '捷運站' }, 
+          { text: '遊樂園' }, { text: '海邊' }, { text: '動物園' }, { text: '公園' }, { text: '圖書館' }, 
+          { text: '銀行' }, { text: '郵局' }, { text: '火車站' }, { text: '機場' }, { text: '電影院' }, 
+          { text: '健身房' }, { text: '游泳池' }, { text: '棒球場' }, { text: '籃球場' }, { text: '足球場' }, 
+          { text: '網球場' }, { text: '高爾夫球場' }, { text: '溜冰場' }, { text: '滑雪場' }, { text: '露營區' }, 
+          { text: '飯店' }, { text: '民宿' }, { text: '青年旅館' }, { text: '博物館' }, { text: '美術館' }, 
+          { text: '科學館' }, { text: '天文館' }, { text: '水族館' }, { text: '植物園' }, { text: '國家公園' }, 
+          { text: '森林遊樂區' }, { text: '農場' }, { text: '牧場' }, { text: '觀光工廠' }, { text: '廟宇' }, 
+          { text: '教堂' }, { text: '郵輪' }, { text: '渡輪站' }, { text: '公車站' }, { text: '高鐵站' }, 
+          { text: '停車場' }, { text: '網咖' }, { text: '撞球館' }, { text: '保齡球館' }, { text: 'ＫＴＶ' }
+        ]
+      }
+    ];
+
+    function App() {
+      const [selectedWeek, setSelectedWeek] = useState(null);
+      const [isGameStarted, setIsGameStarted] = useState(false);
+      const [currentWordIndex, setCurrentWordIndex] = useState(0);
+      const [shuffledWords, setShuffledWords] = useState([]);
+      
+      // 計時器狀態
+      const [timeLeft, setTimeLeft] = useState(60);
+      const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+      // 洗牌函數
+      const shuffleArray = (array) => {
+        let newArray = [...array];
+        for (let i = newArray.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+        }
+        return newArray;
+      };
+
+      // 選擇關卡 (顯示規則頁)
+      const handleSelectWeek = (weekData) => {
+        setSelectedWeek(weekData);
+        setIsGameStarted(false); // 確保先顯示規則
+      };
+
+      // 開始遊戲
+      const startGame = () => {
+        setShuffledWords(shuffleArray(selectedWeek.words));
+        setCurrentWordIndex(0);
+        setTimeLeft(60);
+        setIsTimerRunning(false);
+        setIsGameStarted(true);
+      };
+
+      // 下一題
+      const nextWord = () => {
+        if (currentWordIndex < shuffledWords.length - 1) {
+          setCurrentWordIndex(prev => prev + 1);
+        } else {
+          // 題庫跑完重新洗牌
+          setShuffledWords(shuffleArray(selectedWeek.words));
+          setCurrentWordIndex(0);
+        }
+      };
+
+      // 計時器邏輯
+      useEffect(() => {
+        let timer;
+        if (isTimerRunning && timeLeft > 0) {
+          timer = setInterval(() => {
+            setTimeLeft((prev) => prev - 1);
+          }, 1000);
+        } else if (timeLeft === 0) {
+          setIsTimerRunning(false);
+        }
+        return () => clearInterval(timer);
+      }, [isTimerRunning, timeLeft]);
+
+      const toggleTimer = () => setIsTimerRunning(!isTimerRunning);
+      const resetTimer = () => {
+        setIsTimerRunning(false);
+        setTimeLeft(60);
+      };
+
+      // --- 手繪風 CSS Class 變數 ---
+      const boxStyle = "border-4 border-slate-800 rounded-2xl shadow-[6px_6px_0px_0px_rgba(30,41,59,1)] transition-transform";
+      const buttonStyle = `active:translate-x-1 active:translate-y-1 active:shadow-[2px_2px_0px_0px_rgba(30,41,59,1)] ${boxStyle}`;
+
+      // ================= 主選單畫面 =================
+      if (!selectedWeek) {
+        return (
+          <div className="min-h-screen bg-yellow-50 p-6 flex flex-col justify-between" style={{ backgroundImage: 'radial-gradient(#cbd5e1 2px, transparent 2px)', backgroundSize: '30px 30px' }}>
+            <div className="max-w-4xl mx-auto w-full pt-4 text-slate-800">
+              {/* 標題 */}
+              <div className={`bg-white p-6 mb-8 text-center rotate-1 ${boxStyle}`}>
+                <h1 className="text-4xl md:text-5xl font-black mb-2 text-orange-500 tracking-wide">哩講我猜</h1>
+                <p className="text-xl font-bold text-slate-600">全台語挑戰遊戲</p>
+              </div>
+
+              {/* 關卡網格 */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+                {GAME_DATA.map((data, index) => {
+                  const Icon = data.icon;
+                  return (
+                    <button
+                      key={data.id}
+                      onClick={() => handleSelectWeek(data)}
+                      className={`flex flex-col items-center justify-center p-6 ${data.color} ${buttonStyle} hover:-translate-y-1 hover:rotate-2`}
+                      style={{ transform: index % 2 === 0 ? 'rotate(-1deg)' : 'rotate(1deg)' }}
+                    >
+                      <div className="bg-white p-3 rounded-full border-4 border-slate-800 mb-4">
+                        <Icon size={32} className="text-slate-800" />
+                      </div>
+                      <span className="bg-slate-800 text-white font-black px-3 py-1 rounded-full text-sm mb-2">{data.week}</span>
+                      <h2 className="text-xl font-black text-center mb-1">{data.stage}</h2>
+                      <p className="text-sm font-bold opacity-80">{data.title}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 版權宣告 */}
+            <div className="w-full text-center mt-12 pb-4">
+              <p className="text-sm font-bold text-slate-500 tracking-wider">
+                © 2026 高米文理補習班 版權所有 (僅供教學使用)
+              </p>
+            </div>
+          </div>
+        );
+      }
+
+      // ================= 規則說明畫面 (開始前) =================
+      if (selectedWeek && !isGameStarted) {
+        const Icon = selectedWeek.icon;
+        return (
+          <div className={`min-h-screen ${selectedWeek.color} p-6 flex flex-col items-center justify-center text-slate-800`} style={{ backgroundImage: 'radial-gradient(rgba(255,255,255,0.4) 2px, transparent 2px)', backgroundSize: '30px 30px' }}>
+            <div className={`bg-white w-full max-w-2xl p-10 md:p-14 flex flex-col items-center text-center ${boxStyle}`}>
+              
+              <div className="bg-slate-100 p-6 rounded-full border-4 border-slate-800 mb-6 transform rotate-3">
+                <Icon size={64} className="text-slate-800" />
+              </div>
+              
+              <h2 className="text-4xl font-black mb-2">{selectedWeek.week} : {selectedWeek.stage}</h2>
+              <h3 className="text-2xl font-bold text-slate-500 mb-8">【 {selectedWeek.title} 】</h3>
+              
+              <div className="bg-yellow-100 w-full p-6 rounded-2xl border-4 border-slate-800 mb-10 transform -rotate-1 relative">
+                 <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-slate-800 font-black px-4 py-1 rounded-full border-2 border-slate-800 flex items-center gap-2">
+                    <IconAlertTriangle size={18} /> 遊戲規則
+                 </div>
+                 <p className="text-xl font-bold text-slate-800 mt-4 leading-relaxed">
+                   {selectedWeek.rule}
+                 </p>
+                 <p className="text-md font-bold text-slate-500 mt-4">
+                   ( 共 50 題，題庫會隨機洗牌 )
+                 </p>
+              </div>
+
+              <button 
+                onClick={startGame}
+                className={`bg-orange-500 hover:bg-orange-400 text-white text-3xl font-black py-4 px-12 flex justify-center items-center gap-3 w-full sm:w-auto ${buttonStyle}`}
+              >
+                 開始挑戰 <IconPlay size={32} fill="currentColor" />
+              </button>
+
+              <button 
+                onClick={() => setSelectedWeek(null)}
+                className="mt-8 font-bold text-slate-500 hover:text-slate-800 underline decoration-2 underline-offset-4"
+              >
+                返回首頁
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      // ================= 遊戲主畫面 =================
+      const currentWord = shuffledWords[currentWordIndex];
+
+      return (
+        <div className={`min-h-screen ${selectedWeek.color} p-4 md:p-8 flex flex-col items-center justify-center text-slate-800`}>
+          
+          {/* 頂部導覽列 */}
+          <div className="w-full max-w-3xl flex justify-between items-center mb-6">
+            <button 
+              onClick={() => setSelectedWeek(null)}
+              className={`bg-white px-4 py-2 flex items-center gap-2 font-bold ${buttonStyle}`}
+            >
+              <IconHome size={20} /> 回首頁
+            </button>
+
+            <div className={`bg-white px-6 py-2 font-black text-lg -rotate-1 ${boxStyle}`}>
+              {selectedWeek.week} : {selectedWeek.stage}
+            </div>
+          </div>
+
+          {/* 主遊戲卡片 */}
+          <div className={`bg-white w-full max-w-3xl p-8 md:p-12 flex flex-col items-center relative ${boxStyle}`}>
+            
+            {/* 題號進度 */}
+            <div className="absolute top-4 left-4 bg-yellow-300 font-black px-3 py-1 rounded-full border-2 border-slate-800 transform -rotate-3">
+              第 {currentWordIndex + 1} / {shuffledWords.length} 題
+            </div>
+
+            {/* 規則提示 */}
+            <p className="text-center font-bold text-slate-500 mb-8 mt-6 bg-slate-100 px-4 py-2 rounded-xl border-2 border-dashed border-slate-400">
+              📍 規則：{selectedWeek.rule}
+            </p>
+
+            {/* 題目顯示 */}
+            <h2 className="text-6xl md:text-8xl font-black text-center tracking-widest mb-10 text-slate-800">
+              {currentWord?.text}
+            </h2>
+
+            {/* 禁詞顯示區 (僅 W5, W6 有) */}
+            {currentWord?.taboos && (
+              <div className="w-full bg-red-50 border-4 border-red-500 rounded-2xl p-6 mb-8 relative">
+                <div className="absolute -top-5 left-1/2 transform -translate-x-1/2 bg-red-500 text-white font-black px-4 py-1 rounded-full border-2 border-slate-800 flex items-center gap-2">
+                  <IconAlertTriangle size={16} /> 絕對禁詞
+                </div>
+                <div className="flex flex-wrap justify-center gap-4 mt-2">
+                  {currentWord.taboos.map((taboo, idx) => (
+                    <span key={idx} className="text-2xl md:text-3xl font-black text-red-600 bg-white px-4 py-2 rounded-xl border-2 border-red-200 shadow-sm">
+                      {taboo}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 操作按鈕 */}
+            <div className="flex gap-4 mt-4 w-full">
+              <button 
+                onClick={nextWord}
+                className={`flex-1 bg-yellow-400 text-slate-800 text-2xl font-black py-4 flex justify-center items-center gap-2 ${buttonStyle}`}
+              >
+                 下一題 <IconPlay size={24} fill="currentColor" />
+              </button>
+            </div>
+          </div>
+
+          {/* 底部小工具：計時器 */}
+          <div className={`mt-8 bg-white p-4 flex items-center gap-4 ${boxStyle}`}>
+            <div className="flex items-center gap-2 text-2xl font-black w-32 justify-center">
+              <IconClock size={28} className={isTimerRunning && timeLeft <= 10 ? "text-red-500 animate-pulse" : ""} />
+              <span className={timeLeft <= 10 ? "text-red-500" : ""}>
+                {timeLeft} 秒
+              </span>
+            </div>
+            <button 
+              onClick={toggleTimer}
+              className={`bg-blue-400 text-white p-3 rounded-xl border-2 border-slate-800 shadow-[2px_2px_0px_0px_rgba(30,41,59,1)] active:translate-y-1 active:translate-x-1 active:shadow-none font-bold`}
+            >
+              {isTimerRunning ? '暫停' : '開始計時'}
+            </button>
+            <button 
+              onClick={resetTimer}
+              className={`bg-slate-200 text-slate-800 p-3 rounded-xl border-2 border-slate-800 shadow-[2px_2px_0px_0px_rgba(30,41,59,1)] active:translate-y-1 active:translate-x-1 active:shadow-none`}
+            >
+              <IconRotateCcw size={20} />
+            </button>
+          </div>
+
+        </div>
+      );
+    }
+
+    // 渲染應用
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
