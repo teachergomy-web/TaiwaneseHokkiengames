@@ -59,6 +59,10 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"/><path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     );
 
+    const IconVolume2 = ({ size = 24, className = "" }) => (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} width={size} height={size}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+    );
+
     // --- 遊戲資料庫 (每週擴充至 50 題) ---
     const GAME_DATA = [
       {
@@ -230,6 +234,13 @@
       // 計時器狀態
       const [timeLeft, setTimeLeft] = useState(60);
       const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+      // 查詢 iTaigi 字典發音
+      const speakWord = (text) => {
+        // 開啟 iTaigi 愛台語對應單字的查詢頁面
+        const url = `https://itaigi.tw/k/${encodeURIComponent(text)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+      };
 
       // 洗牌函數
       const shuffleArray = (array) => {
@@ -411,10 +422,19 @@
               📍 規則：{selectedWeek.rule}
             </p>
 
-            {/* 題目顯示 */}
-            <h2 className="text-6xl md:text-8xl font-black text-center tracking-widest mb-10 text-slate-800">
-              {currentWord?.text}
-            </h2>
+            {/* 題目顯示與播放鍵 */}
+            <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-10 w-full">
+              <h2 className="text-6xl md:text-8xl font-black text-center tracking-widest text-slate-800">
+                {currentWord?.text}
+              </h2>
+              <button 
+                onClick={() => speakWord(currentWord?.text)}
+                className={`bg-blue-100 p-4 rounded-full text-blue-600 hover:bg-blue-200 hover:text-blue-700 flex-shrink-0 ${buttonStyle}`}
+                title="去 iTaigi 查台語發音"
+              >
+                <IconVolume2 size={40} />
+              </button>
+            </div>
 
             {/* 禁詞顯示區 (僅 W5, W6 有) */}
             {currentWord?.taboos && (
@@ -424,8 +444,15 @@
                 </div>
                 <div className="flex flex-wrap justify-center gap-4 mt-2">
                   {currentWord.taboos.map((taboo, idx) => (
-                    <span key={idx} className="text-2xl md:text-3xl font-black text-red-600 bg-white px-4 py-2 rounded-xl border-2 border-red-200 shadow-sm">
+                    <span key={idx} className="flex items-center gap-2 text-2xl md:text-3xl font-black text-red-600 bg-white px-4 py-2 rounded-xl border-2 border-red-200 shadow-sm">
                       {taboo}
+                      <button 
+                        onClick={() => speakWord(taboo)}
+                        className="p-2 bg-red-100 hover:bg-red-200 rounded-full transition-colors border-2 border-transparent active:border-red-300"
+                        title="去 iTaigi 查禁詞發音"
+                      >
+                        <IconVolume2 size={24} className="text-red-600" />
+                      </button>
                     </span>
                   ))}
                 </div>
